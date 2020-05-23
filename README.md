@@ -38,3 +38,33 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 11.06 seconds
 ```
+The page itself just has a picture that doesn't really say much. Inspecting the page doesn't give any extra information either.
+
+List directories of the webpage using [gobuster](https://github.com/OJ/gobuster):
+```
+root@kali:/usr/share/wordlists# gobuster dir --url 10.10.10.56 --wordlist /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt --timeout 20s
+===============================================================
+Gobuster v3.0.1
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
+===============================================================
+[+] Url:            http://10.10.10.56
+[+] Threads:        10
+[+] Wordlist:       /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt
+[+] Status codes:   200,204,301,302,307,401,403
+[+] User Agent:     gobuster/3.0.1
+[+] Timeout:        20s
+===============================================================
+2020/05/23 15:18:57 Starting gobuster
+===============================================================
+/.hta (Status: 403)
+/.htaccess (Status: 403)
+/.htpasswd (Status: 403)
+/cgi-bin/ (Status: 403)
+/index.html (Status: 200)
+/server-status (Status: 403)
+===============================================================
+2020/05/23 15:19:39 Finished
+===============================================================
+```
+
+
