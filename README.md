@@ -150,7 +150,7 @@ User shelly may run the following commands on Shocker:
     (root) NOPASSWD: /usr/bin/perl
 ```
 
-Good news, `shelly` can run perl as root, so a Perl reverse shell will do:
+Good news, shelly can run perl as root, so a Perl reverse shell will do:
 
 Attacker:
 ```
