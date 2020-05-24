@@ -100,6 +100,7 @@ After several attempts with [wfuzz](https://github.com/xmendez/wfuzz), this one 
 ```
 root@kali:~# wfuzz -c -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt  http://10.10.10.56/cgi-bin/FUZZ.sh
 ```
+> Note that the `-x` flag of gobuster provides the possibility to append one or more extensions to each word of the list, so it would be the same as we did here with wfuzz.
 
 Now we got the script it's possible to exploit the vulnerability. These are the exploit options already set:
 ```
