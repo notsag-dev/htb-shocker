@@ -1,5 +1,5 @@
 # htb-shocker
-This is my [Hack the box](https://www.hackthebox.eu/)'s Shoker machine write-up.
+This is my [Hack the box](https://www.hackthebox.eu/)'s Shocker machine write-up.
 
 ## Machine
 OS: GNU/Linux
