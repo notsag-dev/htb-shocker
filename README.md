@@ -67,7 +67,7 @@ by OJ Reeves (@TheColonial) & Christian Mehlmauer (@_FireFart_)
 ===============================================================
 ```
 
-Duckduckdicking a bit noticed that the machine's name refers to the Shell Shock vulnerability (CVE-2014-6271), which is related to the `/cgi-bin` directory.
+Duckduckducking a bit noticed that the machine's name refers to the Shell Shock vulnerability (CVE-2014-6271), which is related to the `/cgi-bin` directory.
 
 Search on Metasploit:
 ```
@@ -93,7 +93,6 @@ Matching Modules
 ```
 
 `multi/http/apache_mod_cgi_bash_env_exec` is the one we were looking for. But this one needs the URI of some script that may be under `/cgi-bin`. 
-
 
 
 After several attempts with [wfuzz](https://github.com/xmendez/wfuzz), this one is good for finding `user.sh` was there:
